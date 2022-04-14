@@ -1,73 +1,70 @@
-// Pong
-
-//mode framework ============================================
-int mode;
-final int INTRO     = 1;
-final int GAME      = 2;
-final int PAUSE     = 3;
-final int GAMEOVER  = 4;
-
-//game variables ===========================================
-float leftX, leftY, pD, rightX, rightY; //paddles
-float ballX, ballY, bD; //balllllllllll
-float vx, vy; // determining the ball's movement
-int leftScore, rightScore, timer;
-
-//keyboard variables =======================================
-boolean wKey, sKey, upKey, downKey;
-
-//functions ================================================
-void setup() {
-  size(800,600);
-  mode = INTRO;
-  textAlign(CENTER,CENTER);
+void game() {
+  background(69);
   
-  //initalize paddles =======================================
-  leftX = 0;
-  leftY = height/2;
-  pD = 200;
-  rightX = width;
-  rightY = height/2;
+  //paddles =======================================================
+  fill(255);
+  circle(leftX,leftY,pD);
+  circle(rightX,rightY,pD);
   
-  //initalize ball ==========================================
-  ballX = width/2;
-  ballY = height/2;
-  bD = 60; 
-  vx = random(-3,3);
-  vy = random(-3,3);
-  
-  //initialize keyboard variables ===========================
-  wKey = sKey = upKey = downKey = false;
-  
-  //initializing score ======================================
-  leftScore = rightScore = 0;
-  timer = 50;
-}
-
-void draw() {
-  if (mode==INTRO) {
-    intro();
-  } else if (mode == GAME) {
-    game();
-  } else if (mode == PAUSE) {
-    pause();
-  } else if (mode == GAMEOVER) {
-    gameover();
-  } else {
-    println("Mode error: " + mode);
+  //move paddles and ball =========================================
+  if (timer < 0) {
+    if (wKey == true && leftY >= 0) leftY = leftY - 5;
+    if (sKey == true && leftY <= height) leftY = leftY + 5;
+    if (upKey == true && rightY >= 0) rightY = rightY - 5;
+    if (downKey == true && rightY <= height) rightY = rightY + 5;
+    ballX = ballX + vx; 
+    ballY = ballY + vy;
   }
+  
+  display();
+  bounceAway();
+  scoreDetermine();
+  //gameover ======================================================
+  if (leftScore == 5 || rightScore == 5) mode = GAMEOVER;
 }
 
-void roundReset() {
-  ballX = width/2;
-  ballY = height/2;
+void gameClick() {
   
-  vx = random(-5,5);
-  vy = 5-vx;
-  
-  leftX = 0;
-  leftY = height/2;
+}
 
-  rightX = width;
-  rightY = height/2;  
+//custom functions when mode = GAME ======================
+
+void display() {
+  //ball display ==========================================
+  fill(255,0,0);
+  circle(ballX, ballY, bD);
+  //display score board ===================================
+  fill(255);
+  textSize(28);
+  text("Left score: " + leftScore, width/4,height/12);
+  text("Right score: " + rightScore, width*0.75,height/12);
+  timer = timer - 1; //timing control
+}
+
+void bounceAway() {
+  //check collision and ball bouncing away from the paddle=
+  if (dist(leftX,leftY,ballX,ballY) <= pD/2 + bD/2) { 
+    vx = (ballX - leftX)/10;
+    vy = (ballY - leftY)/10;
+  }
+   if (dist(rightX,rightY,ballX,ballY) <= pD/2 + bD/2) { 
+    vx = (ballX - rightX)/10;
+    vy = (ballY - rightY)/10;
+  }
+  //bounce off the walls ===================================
+  if (ballY < bD/2 || ballY > height-bD/2 ) vy = vy * -1;
+}
+
+void scoreDetermine() {
+  //determining scoring =====================================
+  if (ballX <= 0) {
+    rightScore = rightScore + 1;
+    roundReset();
+    timer = 50;
+  }  
+  if (ballX >= width) {
+    leftScore = leftScore + 1;
+    roundReset();
+    timer = 50;
+  }
 }
